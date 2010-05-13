@@ -775,6 +775,8 @@ enum encoding ParseEncoding(Handle<Value> encoding_v, enum encoding _default) {
     return ASCII;
   } else if (strcasecmp(*encoding, "binary") == 0) {
     return BINARY;
+  } else if (strcasecmp(*encoding, "base64") == 0) {
+    return BASE64;
   } else if (strcasecmp(*encoding, "raw") == 0) {
     fprintf(stderr, "'raw' (array of integers) has been removed. "
                     "Use 'binary'.\n");
@@ -786,6 +788,54 @@ enum encoding ParseEncoding(Handle<Value> encoding_v, enum encoding _default) {
   } else {
     return _default;
   }
+}
+
+static const char base64_chars[] = 
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  "abcdefghijklmnopqrstuvwxyz"
+  "0123456789+/";
+
+static char *base64_encode(const unsigned char *input, int length)
+{
+  /* http://www.adp-gmbh.ch/cpp/common/base64.html */
+  int i=0, j=0, s=0;
+  unsigned char char_array_3[3], char_array_4[4];
+
+  int b64len = (length+2 - ((length+2)%3))*4/3;
+  char *b64str = new char[b64len + 1];
+
+  while (length--) {
+    char_array_3[i++] = *(input++);
+    if (i == 3) {
+      char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+      char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+      char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+      char_array_4[3] = char_array_3[2] & 0x3f;
+
+      for (i = 0; i < 4; i++)
+        b64str[s++] = base64_chars[char_array_4[i]];
+
+      i = 0;
+    }
+  }
+  if (i) {
+    for (j = i; j < 3; j++)
+      char_array_3[j] = '\0';
+
+    char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+    char_array_4[3] = char_array_3[2] & 0x3f;
+
+    for (j = 0; j < i + 1; j++)
+      b64str[s++] = base64_chars[char_array_4[j]];
+
+    while (i++ < 3)
+      b64str[s++] = '=';
+  }
+  b64str[b64len] = '\0';
+
+  return b64str;
 }
 
 Local<Value> Encode(const void *buf, size_t len, enum encoding encoding) {
@@ -803,6 +853,12 @@ Local<Value> Encode(const void *buf, size_t len, enum encoding encoding) {
     Local<String> chunk = String::New(twobytebuf, len);
     delete [] twobytebuf; // TODO use ExternalTwoByteString?
     return scope.Close(chunk);
+  }
+  else if (encoding == BASE64) {
+    char *b64 = base64_encode(static_cast<const unsigned char *>(buf), len);
+    Local<String> ret = String::New(b64);
+    delete[] b64;
+    return scope.Close(ret);
   }
 
   // utf8 or ascii encoding

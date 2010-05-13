@@ -198,6 +198,14 @@ Handle<Value> Buffer::BinarySlice(const Arguments &args) {
   return scope.Close(b);
 }
 
+Handle<Value> Buffer::ToBase64(const Arguments &args) {
+  HandleScope scope;
+  Buffer *parent = ObjectWrap::Unwrap<Buffer>(args.This());
+  const char *data = const_cast<char*>(parent->data());
+  Local<Value> b =  Encode(data, parent->length(), BASE64);
+  return scope.Close(b);
+}
+
 
 Handle<Value> Buffer::AsciiSlice(const Arguments &args) {
   HandleScope scope;
@@ -480,6 +488,7 @@ void Buffer::Initialize(Handle<Object> target) {
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "binarySlice", Buffer::BinarySlice);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "asciiSlice", Buffer::AsciiSlice);
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "slice", Buffer::Slice);
+  NODE_SET_PROTOTYPE_METHOD(constructor_template, "toBase64", Buffer::ToBase64);
   // TODO NODE_SET_PROTOTYPE_METHOD(t, "utf16Slice", Utf16Slice);
   // copy
   NODE_SET_PROTOTYPE_METHOD(constructor_template, "utf8Slice", Buffer::Utf8Slice);

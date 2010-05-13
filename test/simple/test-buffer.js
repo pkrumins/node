@@ -106,3 +106,34 @@ assert.equal(7, b[3]);
 var c = b.slice(2 , 4);
 assert.equal(6, c[0]);
 assert.equal(7, c[1]);
+
+
+// toBase64
+var b = new Buffer(1);
+b.write('a');
+assert.equal(b.toBase64(), 'YQ==');
+
+var b = new Buffer(2);
+b.write('aa');
+assert.equal(b.toBase64(), 'YWE=');
+
+var b = new Buffer(3);
+b.write('aaa');
+assert.equal(b.toBase64(), 'YWFh');
+
+var b = new Buffer(4);
+b.write('aaaa');
+assert.equal(b.toBase64(), 'YWFhYQ==');
+
+var b = new Buffer(5);
+b.write('aaaaa');
+assert.equal(b.toBase64(), 'YWFhYWE=');
+
+var b = new Buffer(94);
+b.write('qwertyuiop[]\\asdfghjkl;\'zxcvbnm,./`1234567890-=QWERTYUIOP{}|ASDFGHJKL:"ZXCVBNM<>?~!@#$%^&*()_+');
+assert.equal(b.toBase64(), 'cXdlcnR5dWlvcFtdXGFzZGZnaGprbDsnenhjdmJubSwuL2AxMjM0NTY3ODkwLT1RV0VSVFlVSU9Qe318QVNERkdISktMOiJaWENWQk5NPD4/fiFAIyQlXiYqKClfKw==');
+
+var fs = require('fs');
+var b = new Buffer(7566);
+b.write(fs.readFileSync(testDir + '/simple/base64-test-input.dat', 'binary'), 'binary');
+assert.equal(b.toBase64(), fs.readFileSync(testDir + '/simple/base64-test-output.dat'));

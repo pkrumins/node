@@ -95,6 +95,11 @@ beginning at `start` and ending at `end`.
 
 See `buffer.write()` example, above.
 
+### buffer.toBase64()
+
+Encodes the data in the buffer to base64 encoding and returns it. Note that
+it encodes every 3 bytes into 4, so the returned string is around 4/3 longer
+than the buffer size.
 
 ### buffer[index]
 
@@ -1269,9 +1274,9 @@ Asynchronous chmod(2). No arguments other than a possible exception are given to
 
 Synchronous chmod(2).
   
-### fs.stat(path, callback), fs.lstat(path, callback), fs.fstat(fd, callback)
+### fs.stat(path, callback), fs.lstat(path, callback)
 
-Asynchronous stat(2), lstat(2) or fstat(2). The callback gets two arguments `(err, stats)` where `stats` is a `fs.Stats` object. It looks like this:
+Asynchronous stat(2) or lstat(2). The callback gets two arguments `(err, stats)` where `stats` is a `fs.Stats` object. It looks like this:
 
     { dev: 2049
     , ino: 305352
@@ -1290,9 +1295,9 @@ Asynchronous stat(2), lstat(2) or fstat(2). The callback gets two arguments `(er
 
 See the `fs.Stats` section below for more information.
 
-### fs.statSync(path), fs.lstatSync(path), fs.fstatSync(fd)
+### fs.statSync(path), fs.lstatSync(path)
 
-Synchronous stat(2), lstat(2) or fstat(2). Returns an instance of `fs.Stats`.
+Synchronous stat(2) or lstat(2). Returns an instance of `fs.Stats`.
 
 ### fs.link(srcpath, dstpath, callback)
 
